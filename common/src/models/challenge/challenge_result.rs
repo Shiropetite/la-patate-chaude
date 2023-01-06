@@ -1,6 +1,6 @@
 use serde::{Serialize, Deserialize};
 
-use crate::ChallengeAnswer;
+use super::ChallengeAnswer;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ChallengeResult {

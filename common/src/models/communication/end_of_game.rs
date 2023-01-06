@@ -1,6 +1,6 @@
 use serde::{Serialize, Deserialize};
 
-use crate::PublicPlayer;
+use super::PublicPlayer;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct EndOfGame {

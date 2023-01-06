@@ -1,6 +1,6 @@
 use serde::{Serialize, Deserialize};
 
-use crate::md5::MD5HashcashInput;
+use super::md5::MD5HashcashInput;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub enum Challenge {

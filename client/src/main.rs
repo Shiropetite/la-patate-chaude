@@ -2,24 +2,17 @@ use std::env;
 use std::io::prelude::*;
 use std::net::TcpStream;
 
-mod challenges;
-mod models;
-
-use challenges::md5::Md5;
-use models::communication::*;
-use models::challenge::*;
+use common::challenges::md5::Md5;
+use common::models::communication::*;
+use common::models::challenge::*;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
     let server_address = &args[1];
     let name = &args[2];
 
-    let mut stream = TcpStream::connect(server_address + ":7878").unwrap();
-
-    let mut endOfGame = false;
-   
+    let mut stream = TcpStream::connect(server_address.to_owned() + ":7878").unwrap(); 
     
-
     send_message(&mut stream, SentMessage::Hello);
     receive_message(&mut stream);
 
@@ -28,10 +21,6 @@ fn main() {
 
     receive_message(&mut stream); // public leader board
     receive_message(&mut stream); // minigame
-
-    while(endOfGame) {
-
-    }
 }
 
 fn send_message(stream: &mut TcpStream, send_message: SentMessage) {
