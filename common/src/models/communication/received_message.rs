@@ -1,6 +1,6 @@
 use serde::{Serialize, Deserialize};
 
-use crate::models::challenge::{Challenge, ChallengeTimeout};
+use crate::models::challenge::{Challenge, ChallengeTimeout, ChallengeResult};
 
 use super::{Welcome, SubscribeResult, PublicPlayer, RoundSummary, EndOfGame};
 
@@ -10,6 +10,7 @@ pub enum ReceivedMessage {
     SubscribeResult(SubscribeResult),
     PublicLeaderBoard(Vec<PublicPlayer>),
     Challenge(Challenge),
+    ChallengeResult(ChallengeResult),
     ChallengeTimeout(ChallengeTimeout),
     RoundSummary(RoundSummary),
     EndOfGame(EndOfGame)
