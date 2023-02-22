@@ -25,7 +25,7 @@ impl ClientManager {
 
     // Listen to the server 
     pub fn listen(&mut self) -> Result<(), Error> {
-        self.write_message(SentMessage::Hello)?;
+        self.write_message(SentMessageClient::Hello)?;
         
         loop {
             let message = self.read_message()?;
@@ -34,28 +34,28 @@ impl ClientManager {
     }
 
     // Proccess the message sent by the server
-    fn process_message(&mut self, received_message: ReceivedMessage) -> Result<(), Error> {
+    fn process_message(&mut self, received_message: ReceivedMessageClient) -> Result<(), Error> {
         match received_message {
-            ReceivedMessage::Welcome(_) => { self.on_welcome_message()? }
-            ReceivedMessage::SubscribeResult(subscribe_result) => { 
+            ReceivedMessageClient::Welcome(_) => { self.on_welcome_message()? }
+            ReceivedMessageClient::SubscribeResult(subscribe_result) => { 
                 self.on_subscribe_result(subscribe_result)? 
             }
-            ReceivedMessage::PublicLeaderBoard(public_leader_board) => { 
+            ReceivedMessageClient::PublicLeaderBoard(public_leader_board) => { 
                 self.on_public_leader_board(public_leader_board)?
             }
-            ReceivedMessage::Challenge(challenge) => {
+            ReceivedMessageClient::Challenge(challenge) => {
                 self.on_challenge(challenge)?
             }
-            ReceivedMessage::ChallengeResult(challenge_result) => {
+            ReceivedMessageClient::ChallengeResult(challenge_result) => {
                 self.on_challenge_result(challenge_result)?
             }
-            ReceivedMessage::ChallengeTimeout(challenge_timout) => {
+            ReceivedMessageClient::ChallengeTimeout(challenge_timout) => {
                 self.on_challenge_timeout(challenge_timout)?
             }
-            ReceivedMessage::RoundSummary(round_summary) => {
+            ReceivedMessageClient::RoundSummary(round_summary) => {
                 self.on_round_summary(round_summary)?
             }
-            ReceivedMessage::EndOfGame(end_of_game) => {
+            ReceivedMessageClient::EndOfGame(end_of_game) => {
                 self.on_end_of_game(end_of_game)?
             }
         }
@@ -64,7 +64,7 @@ impl ClientManager {
 
     // Process welcome message
     fn on_welcome_message(&mut self) -> Result<(), Error> {
-        let message_subscribe = SentMessage::Subscribe(Subscribe { name: self.name_current_player.clone() });
+        let message_subscribe = SentMessageClient::Subscribe(Subscribe { name: self.name_current_player.clone() });
         self.write_message(message_subscribe)?;
         Ok(())
     }
@@ -106,7 +106,7 @@ impl ClientManager {
         let result = md5.solve();
         let challenge_answer = ChallengeAnswer::MD5HashCash(result);
 
-        let message = SentMessage::ChallengeResult(
+        let message = SentMessageClient::ChallengeResult(
             ChallengeResult 
             { 
                 answer: challenge_answer, 
@@ -153,7 +153,7 @@ impl ClientManager {
     }
 
     // Read a message from the server
-    fn read_message(&mut self) -> Result<ReceivedMessage, Error> {
+    fn read_message(&mut self) -> Result<ReceivedMessageClient, Error> {
         let mut size_buffer  = [0u8; 4];
         self.stream.read_exact(size_buffer .as_mut()).expect("Server message failed to be read");
 
@@ -163,14 +163,14 @@ impl ClientManager {
         self.stream.read_exact(message_buffer .as_mut()).expect("Server message failed to be read"); 
 
         let result = String::from_utf8_lossy(&message_buffer); 
-        let received_message = serde_json::from_str::<ReceivedMessage>(&result).expect("Server message failed to be deserialized");
+        let received_message = serde_json::from_str::<ReceivedMessageClient>(&result).expect("Server message failed to be deserialized");
 
         println!("Message received : {received_message:?}");
         Ok(received_message)
     }
 
     // Write message to the server
-    fn write_message(&mut self, message_to_send: SentMessage) -> io::Result<()> {
+    fn write_message(&mut self, message_to_send: SentMessageClient) -> io::Result<()> {
         let serialized = serde_json::to_string(&message_to_send).expect("The message failed to be serialized");
         let serialized_size = serialized.len() as u32;
 
