@@ -1,5 +1,5 @@
-use common;
+use common::{self, models::communication::SentMessage};
 
 fn main() {
-    println!("{:?}", common::models::communication::SentMessage::Hello);
+    println!("{:?}", SentMessage::Hello);
 }
