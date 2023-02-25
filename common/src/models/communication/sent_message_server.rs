@@ -1,6 +1,6 @@
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
-use super::{Welcome};
+use super::Welcome;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub enum SentMessageServer {

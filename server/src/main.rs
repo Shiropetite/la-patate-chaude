@@ -12,7 +12,7 @@ fn main() {
         Ok(mut server_manager) => {
             let listener = server_manager.listen();
             match listener {
-                Ok(()) => {},
+                Ok(()) => {}
                 Err(error) => {
                     eprintln!("Erreur : {:?}", error);
                     process::exit(1)

@@ -1,4 +1,4 @@
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct PublicPlayer {
@@ -7,5 +7,5 @@ pub struct PublicPlayer {
     score: i32,
     steps: u32,
     is_active: bool,
-    total_used_time: f64
+    total_used_time: f64,
 }

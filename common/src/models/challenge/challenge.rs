@@ -1,4 +1,4 @@
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
 use super::md5::MD5HashcashInput;
 
@@ -20,4 +20,4 @@ pub trait ChallengeTrait {
     fn solve(&self) -> Self::Output;
     /// Vérifie qu'une sortie est valide pour le challenge
     fn verify(&self, answer: &Self::Output) -> bool;
-  }
+}

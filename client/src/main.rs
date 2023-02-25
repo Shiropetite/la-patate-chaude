@@ -10,20 +10,16 @@ fn main() {
 
     let client_manager_option = ClientManager::new(args);
     match client_manager_option {
-        Ok(mut client_manager) => {
-            match client_manager.listen() {
-                Ok(()) => {}
-                Err(error) => {
-                    eprintln!("Erreur : {:?}", error);
-                    process::exit(1);
-                }
+        Ok(mut client_manager) => match client_manager.listen() {
+            Ok(()) => {}
+            Err(error) => {
+                eprintln!("Erreur : {:?}", error);
+                process::exit(1);
             }
         },
-        Err(error) =>  {
+        Err(error) => {
             eprintln!("Erreur de connexion : {:?}", error);
             process::exit(1);
-        },
+        }
     }
-    
 }
-

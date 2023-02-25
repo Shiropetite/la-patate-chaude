@@ -1,4 +1,7 @@
-use common::{models::challenge::{md5::{MD5HashcashInput}, ChallengeTrait}, challenges::md5::Md5};
+use common::{
+    challenges::md5::Md5,
+    models::challenge::{md5::MD5HashcashInput, ChallengeTrait},
+};
 
 #[test]
 fn md5_challenge() {

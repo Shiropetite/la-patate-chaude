@@ -1,7 +1,7 @@
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct MD5HashcashInput {
     pub complexity: u32,
-    pub message: String
+    pub message: String,
 }

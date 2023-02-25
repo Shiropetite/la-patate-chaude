@@ -1,15 +1,24 @@
-use std::{net::TcpStream, io::{Error, Read, Write, self}, process};
+use std::{
+    io::{self, Error, Read, Write},
+    net::TcpStream,
+    process,
+};
 
-use common::{models::{communication::*, challenge::{*, md5::*}}, challenges::md5::*};
+use common::{
+    challenges::md5::*,
+    models::{
+        challenge::{md5::*, *},
+        communication::*,
+    },
+};
 
 pub struct ClientManager {
     name_current_player: String,
     players: Vec<PublicPlayer>,
-    stream: TcpStream
+    stream: TcpStream,
 }
 
 impl ClientManager {
-
     // Create a client manager and etablish a connection with the server
     pub fn new(args: Vec<String>) -> Result<ClientManager, Error> {
         let name = &args[1];
@@ -20,13 +29,17 @@ impl ClientManager {
 
         let stream = TcpStream::connect(&address)?;
 
-        Ok(ClientManager { name_current_player: name.clone(), players: Vec::new(), stream })        
+        Ok(ClientManager {
+            name_current_player: name.clone(),
+            players: Vec::new(),
+            stream,
+        })
     }
 
-    // Listen to the server 
+    // Listen to the server
     pub fn listen(&mut self) -> Result<(), Error> {
         self.write_message(SentMessageClient::Hello)?;
-        
+
         loop {
             let message = self.read_message()?;
             self.process_message(message)?;
@@ -36,16 +49,14 @@ impl ClientManager {
     // Proccess the message sent by the server
     fn process_message(&mut self, received_message: ReceivedMessageClient) -> Result<(), Error> {
         match received_message {
-            ReceivedMessageClient::Welcome(_) => { self.on_welcome_message()? }
-            ReceivedMessageClient::SubscribeResult(subscribe_result) => { 
-                self.on_subscribe_result(subscribe_result)? 
+            ReceivedMessageClient::Welcome(_) => self.on_welcome_message()?,
+            ReceivedMessageClient::SubscribeResult(subscribe_result) => {
+                self.on_subscribe_result(subscribe_result)?
             }
-            ReceivedMessageClient::PublicLeaderBoard(public_leader_board) => { 
+            ReceivedMessageClient::PublicLeaderBoard(public_leader_board) => {
                 self.on_public_leader_board(public_leader_board)?
             }
-            ReceivedMessageClient::Challenge(challenge) => {
-                self.on_challenge(challenge)?
-            }
+            ReceivedMessageClient::Challenge(challenge) => self.on_challenge(challenge)?,
             ReceivedMessageClient::ChallengeResult(challenge_result) => {
                 self.on_challenge_result(challenge_result)?
             }
@@ -55,16 +66,16 @@ impl ClientManager {
             ReceivedMessageClient::RoundSummary(round_summary) => {
                 self.on_round_summary(round_summary)?
             }
-            ReceivedMessageClient::EndOfGame(end_of_game) => {
-                self.on_end_of_game(end_of_game)?
-            }
+            ReceivedMessageClient::EndOfGame(end_of_game) => self.on_end_of_game(end_of_game)?,
         }
         Ok(())
     }
 
     // Process welcome message
     fn on_welcome_message(&mut self) -> Result<(), Error> {
-        let message_subscribe = SentMessageClient::Subscribe(Subscribe { name: self.name_current_player.clone() });
+        let message_subscribe = SentMessageClient::Subscribe(Subscribe {
+            name: self.name_current_player.clone(),
+        });
         self.write_message(message_subscribe)?;
         Ok(())
     }
@@ -93,9 +104,7 @@ impl ClientManager {
     // Process the type of challenge return by the server
     fn on_challenge(&mut self, challenge: Challenge) -> Result<(), Error> {
         match challenge {
-            Challenge::MD5HashCash(input) => {
-            self.on_md5_challenge(input)?
-            }
+            Challenge::MD5HashCash(input) => self.on_md5_challenge(input)?,
         }
         Ok(())
     }
@@ -106,22 +115,19 @@ impl ClientManager {
         let result = md5.solve();
         let challenge_answer = ChallengeAnswer::MD5HashCash(result);
 
-        let message = SentMessageClient::ChallengeResult(
-            ChallengeResult 
-            { 
-                answer: challenge_answer, 
-                next_target: self.choose_next_player()?
-            }
-        );
+        let message = SentMessageClient::ChallengeResult(ChallengeResult {
+            answer: challenge_answer,
+            next_target: self.choose_next_player()?,
+        });
 
         self.write_message(message)?;
         Ok(())
     }
 
-    // Return next player 
+    // Return next player
     fn choose_next_player(&mut self) -> Result<String, Error> {
         for name_player in &self.players {
-            if name_player.name != self.name_current_player{
+            if name_player.name != self.name_current_player {
                 return Ok(name_player.name.clone());
             }
         }
@@ -154,16 +160,21 @@ impl ClientManager {
 
     // Read a message from the server
     fn read_message(&mut self) -> Result<ReceivedMessageClient, Error> {
-        let mut size_buffer  = [0u8; 4];
-        self.stream.read_exact(size_buffer .as_mut()).expect("Server message failed to be read");
+        let mut size_buffer = [0u8; 4];
+        self.stream
+            .read_exact(size_buffer.as_mut())
+            .expect("Server message failed to be read");
 
-        let message_size = u32::from_be_bytes(size_buffer ); 
+        let message_size = u32::from_be_bytes(size_buffer);
 
-        let mut message_buffer  = vec![0u8; message_size as usize]; 
-        self.stream.read_exact(message_buffer .as_mut()).expect("Server message failed to be read"); 
+        let mut message_buffer = vec![0u8; message_size as usize];
+        self.stream
+            .read_exact(message_buffer.as_mut())
+            .expect("Server message failed to be read");
 
-        let result = String::from_utf8_lossy(&message_buffer); 
-        let received_message = serde_json::from_str::<ReceivedMessageClient>(&result).expect("Server message failed to be deserialized");
+        let result = String::from_utf8_lossy(&message_buffer);
+        let received_message = serde_json::from_str::<ReceivedMessageClient>(&result)
+            .expect("Server message failed to be deserialized");
 
         println!("Message received : {received_message:?}");
         Ok(received_message)
@@ -171,16 +182,21 @@ impl ClientManager {
 
     // Write message to the server
     fn write_message(&mut self, message_to_send: SentMessageClient) -> io::Result<()> {
-        let serialized = serde_json::to_string(&message_to_send).expect("The message failed to be serialized");
+        let serialized =
+            serde_json::to_string(&message_to_send).expect("The message failed to be serialized");
         let serialized_size = serialized.len() as u32;
 
-        self.stream.write(&serialized_size.to_be_bytes()).expect("The message size failed to be sent");
-        self.stream.write(&serialized.as_bytes()).expect("The message failed to be sent");
-        self.stream.flush().expect("The message failed to be flushed");
-
+        self.stream
+            .write(&serialized_size.to_be_bytes())
+            .expect("The message size failed to be sent");
+        self.stream
+            .write(&serialized.as_bytes())
+            .expect("The message failed to be sent");
+        self.stream
+            .flush()
+            .expect("The message failed to be flushed");
 
         println!("Message sent : {serialized}");
         Ok(())
     }
-
 }
